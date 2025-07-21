@@ -1,0 +1,12 @@
+{
+  "name": "rubiks-cube-tests",
+  "version": "1.0.0",
+  "description": "Unit tests for Rubik's cube logic",
+  "main": "rubiks-cube.js",
+  "scripts": {
+    "test": "node test-cube.js"
+  },
+  "keywords": ["rubiks", "cube", "puzzle", "3d"],
+  "author": "",
+  "license": "MIT"
+} 
