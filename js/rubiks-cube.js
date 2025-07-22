@@ -58,13 +58,13 @@ class RubiksCube {
         // Store the column from each face in the vertical cycle
         const topCol = [this.faces[2][0][col], this.faces[2][1][col], this.faces[2][2][col]];
         const frontCol = [this.faces[0][0][col], this.faces[0][1][col], this.faces[0][2][col]];
-        const bottomCol = [this.faces[5][0][col], this.faces[5][1][col], this.faces[5][2][col]];
-        const backCol = [this.faces[3][0][2-col], this.faces[3][1][2-col], this.faces[3][2][2-col]]; // Back face is mirrored horizontally
+        const bottomCol = [this.faces[5][2][col], this.faces[5][1][col], this.faces[5][0][col]];
+        const backCol = [this.faces[3][0][col], this.faces[3][1][col], this.faces[3][2][col]]; // Back face is mirrored horizontally
         
         // Cycle: top → back → bottom → front → top (pieces move up)
         for (let row = 0; row < 3; row++) {
-            this.faces[3][2-row][2-col] = topCol[row];        // top → back (reversed vertically and mirrored)
-            this.faces[5][row][col] = backCol[2-row];         // back → bottom (reversed vertically)
+            this.faces[3][2-row][col] = topCol[row];        // top → back (reversed vertically and mirrored)
+            this.faces[5][row][col] = backCol[row];         // back → bottom (reversed vertically)
             this.faces[0][row][col] = bottomCol[row];         // bottom → front
             this.faces[2][row][col] = frontCol[row];          // front → top
         }
@@ -110,28 +110,9 @@ class RubiksCube {
 
     // Rotate all rows to the left
     rotateAllRowsLeft() {
-        for (let row = 0; row < 3; row++) {
-            // Store the row from each face in the horizontal cycle
-            const frontRow = [this.faces[0][row][0], this.faces[0][row][1], this.faces[0][row][2]];
-            const rightRow = [this.faces[1][row][0], this.faces[1][row][1], this.faces[1][row][2]];
-            const backRow = [this.faces[3][row][0], this.faces[3][row][1], this.faces[3][row][2]];
-            const leftRow = [this.faces[4][row][0], this.faces[4][row][1], this.faces[4][row][2]];
-
-            // Cycle: front → left → back → right → front (pieces move left)
-            for (let col = 0; col < 3; col++) {
-                this.faces[4][row][2-col] = frontRow[col];        // front → left (mirrored)
-                this.faces[3][row][2-col] = leftRow[2-col];       // left → back (mirrored)
-                this.faces[1][row][col] = backRow[2-col];         // back → right (mirrored)
-                this.faces[0][row][col] = rightRow[col];          // right → front
-            }
-
-            // Rotate corresponding face when rotating top/bottom rows (opposite direction)
-            if (row === 0) {
-                this.rotateFaceClockwise(2); // Rotate top face clockwise
-            } else if (row === 2) {
-                this.rotateFaceClockwise(5); // Rotate bottom face clockwise
-            }
-        }
+        this.rotateRowLeft(0);
+        this.rotateRowLeft(1);
+        this.rotateRowLeft(2);
     }
 
     // Rotate all rows to the right (implemented as 3x left)
@@ -157,22 +138,9 @@ class RubiksCube {
 
     // Rotate the front face clockwise
     rotateFrontClockwise() {
-        // Store the adjacent edge pieces that will move BEFORE rotating the front face
-        const topEdge = [this.faces[2][2][0], this.faces[2][2][1], this.faces[2][2][2]]; // Top face bottom edge
-        const rightEdge = [this.faces[1][0][0], this.faces[1][1][0], this.faces[1][2][0]]; // Right face left edge
-        const bottomEdge = [this.faces[5][0][0], this.faces[5][0][1], this.faces[5][0][2]]; // Bottom face top edge
-        const leftEdge = [this.faces[4][0][2], this.faces[4][1][2], this.faces[4][2][2]]; // Left face right edge (column 2)
-        
-        // Rotate the front face itself AFTER capturing edges
-        this.rotateFaceClockwise(0);
-        
-        // Rotate the edges: top → right → bottom → left → top
-        for (let i = 0; i < 3; i++) {
-            this.faces[1][i][0] = topEdge[i];        // top → right
-            this.faces[5][0][2-i] = rightEdge[i];    // right → bottom (reversed)
-            this.faces[4][2-i][2] = bottomEdge[i];   // bottom → left (reversed)
-            this.faces[2][2][i] = leftEdge[2-i];     // left → top (reversed)
-        }
+        this.rotateAllRowsRight();
+        this.rotateColumnUp(2);
+        this.rotateAllRowsLeft();
     }
 
     // Rotate the front face counter-clockwise (implemented as 3x clockwise)

@@ -22,6 +22,8 @@ class CubeUI extends RubiksCube {
         return square;
     }
 
+
+
     // Create a parallelogram for the right face
     createRightFace(x, y, color) {
         const face = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -88,6 +90,22 @@ class CubeUI extends RubiksCube {
                 this.svg.appendChild(face);
             }
         }
+
+        // Add labels for the visible faces
+    }
+
+    // Helper method to add face labels
+    addFaceLabel(x, y, text) {
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', y);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', 'white');
+        label.setAttribute('font-family', 'Arial, sans-serif');
+        label.setAttribute('font-size', '14');
+        label.setAttribute('font-weight', 'bold');
+        label.textContent = text;
+        this.svg.appendChild(label);
     }
 
     redrawCube() {
