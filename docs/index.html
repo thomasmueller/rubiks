@@ -78,7 +78,7 @@
         
         .column-controls {
             position: relative;
-            height: 80px;
+            height: 128px;
             margin-left: -40px;
             margin-top: 20px;
         }
@@ -87,7 +87,7 @@
             position: absolute;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
         
         .all-columns-up-btn,
@@ -95,15 +95,15 @@
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
             color: black;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 13px 19px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 29px;
             font-weight: bold;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
-            width: 40px;
-            height: 35px;
+            width: 64px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -130,16 +130,16 @@
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
             color: black;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 13px 26px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 22px;
             font-weight: bold;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
-            width: 70px;
-            height: 35px;
-            margin-left: -105px;
+            width: 112px;
+            height: 56px;
+            margin-left: -90px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -167,7 +167,7 @@
         </div>
         
         <div class="column-controls">
-            <div class="all-columns-buttons" style="left: -105px;">
+            <div class="all-columns-buttons" style="left: -125px;">
                 <button onclick="cube.rotateFrontCounterClockwise()" class="all-columns-up-btn">↺</button>
                 <button onclick="cube.rotateAllRowsLeft()" class="all-columns-down-btn">⬅</button>
             </div>
@@ -175,7 +175,7 @@
                 <button onclick="cube.rotateAllColumnsUp()" class="all-columns-up-btn">⬆</button>
                 <button onclick="cube.rotateAllColumnsDown()" class="all-columns-down-btn">⬇</button>
             </div>
-            <div class="all-columns-buttons" style="left: -5px;">
+            <div class="all-columns-buttons" style="left: 15px;">
                 <button onclick="cube.rotateFrontClockwise()" class="all-columns-up-btn">↻</button>
                 <button onclick="cube.rotateAllRowsRight()" class="all-columns-down-btn" style="transform: scaleX(-1)">⬅</button>
             </div>

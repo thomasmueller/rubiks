@@ -315,9 +315,9 @@ class CubeUI extends RubiksCube {
             }
         } else {
             // Front face rotation
-            if (dragX > 0 && dragY > 0) {
+            if (dragX > 1 && dragY > 1) {
                 this.rotateFrontClockwise();
-            } else {
+            } else if (dragX < -1 && dragY < -1) {
                 this.rotateFrontCounterClockwise();
             }
         }
