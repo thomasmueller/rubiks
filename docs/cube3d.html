@@ -7,7 +7,6 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
             font-family: Arial, sans-serif;
             background: #f0f0f0;
             display: flex;
@@ -20,7 +19,7 @@
         .container {
             text-align: center;
             background: white;
-            padding: 20px;
+            padding: 0;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
@@ -33,6 +32,7 @@
         #cube-container {
             cursor: grab;
             user-select: none;
+            margin-left: -100px;
         }
         
         #cube-container:active {
@@ -45,7 +45,7 @@
         }
         
         .controls {
-            margin-top: 20px;
+            margin-top: 0;
         }
         
         button {
@@ -69,13 +69,22 @@
         .color-yellow { fill: #ffff00; }
         .color-orange { fill: #ff8000; }
         .color-white { fill: #ffffff; }
+        
+        .cube-face:hover {
+            stroke-width: 3;
+            stroke: #ffff00;
+        }
+        
+        .selected-square {
+            stroke-width: 4;
+            stroke: #ff0000 !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>3D Rubik's Cube</h1>
         <div id="cube-container">
-            <svg width="600" height="600" viewBox="-300 -300 600 600">
+            <svg width="500" height="300" viewBox="-200 -200 400 400">
                 <g id="cube-group"></g>
             </svg>
         </div>
@@ -92,14 +101,15 @@
                 this.svg = document.getElementById('cube-group');
                 this.container = document.getElementById('cube-container');
                 
-                // Cube state - 6 faces, each 3x3
+                // Cube state - 6 faces, each 3x3 (matches rubiks-cube.js face indices)
+                // faces: 0=front, 1=right, 2=top, 3=back, 4=left, 5=bottom
                 this.faces = [
-                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']], // Front
-                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']], // Right
-                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']], // Back
-                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']], // Left
+                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']], // Front
+                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']], // Right
                     [['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow']], // Top
-                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']] // Bottom
+                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']], // Back
+                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']], // Left
+                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']] // Bottom
                 ];
                 
                 // 3D rotation angles
@@ -107,12 +117,17 @@
                 this.rotationY = 25;
                 this.rotationZ = 0;
                 
-                // Interaction state
-                this.isDragging = false;
-                this.lastMouseX = 0;
-                this.lastMouseY = 0;
+                                 // Interaction state
+                 this.isDragging = false;
+                 this.isRotatingCube = false;
+                 this.isRotatingFace = false;
+                 this.lastMouseX = 0;
+                 this.lastMouseY = 0;
+                 this.dragStartX = 0;
+                 this.dragStartY = 0;
+                 this.selectedSquare = null;
                 
-                                 this.cubeSize = 100;
+                this.cubeSize = 150;
                  this.squareSize = this.cubeSize / 3;
                  
                  // Bounding box of the rendered cube for hit detection
@@ -134,7 +149,7 @@
                 document.addEventListener('touchend', (e) => this.onPointerEnd(e), { passive: false });
             }
             
-                         onPointerStart(e) {
+            onPointerStart(e) {
                  e.preventDefault();
                  
                  const pointer = e.touches ? e.touches[0] : e;
@@ -142,45 +157,100 @@
                  const svgX = pointer.clientX - rect.left - rect.width / 2;
                  const svgY = pointer.clientY - rect.top - rect.height / 2;
                  
-                 // Check if click/touch is inside the cube bounds
-                 if (svgX >= this.cubeBounds.minX && svgX <= this.cubeBounds.maxX &&
-                     svgY >= this.cubeBounds.minY && svgY <= this.cubeBounds.maxY) {
-                     // Inside cube - don't allow rotation
-                     this.isDragging = false;
-                     return;
+                 // Check if clicking on a specific square
+                 const clickedSquare = this.getSquareAtPoint(svgX, svgY);
+                 
+                 if (clickedSquare) {
+                     // Clicked on a square - prepare for face rotation
+                     this.isDragging = true;
+                     this.isRotatingFace = true;
+                     this.isRotatingCube = false;
+                     this.selectedSquare = {
+                         face: parseInt(clickedSquare.getAttribute('data-face')),
+                         row: parseInt(clickedSquare.getAttribute('data-row')),
+                         col: parseInt(clickedSquare.getAttribute('data-col')),
+                         element: clickedSquare
+                     };
+                     this.dragStartX = pointer.clientX;
+                     this.dragStartY = pointer.clientY;
+                     
+                     // Highlight selected square
+                     clickedSquare.classList.add('selected-square');
+                 } else {
+                     // Check if click/touch is inside the cube bounds
+                     if (svgX >= this.cubeBounds.minX && svgX <= this.cubeBounds.maxX &&
+                         svgY >= this.cubeBounds.minY && svgY <= this.cubeBounds.maxY) {
+                         // Inside cube but no square - don't allow any rotation
+                         this.isDragging = false;
+                         return;
+                     }
+                     
+                     // Outside cube - allow cube rotation
+                     this.isDragging = true;
+                     this.isRotatingCube = true;
+                     this.isRotatingFace = false;
                  }
                  
-                 // Outside cube - allow rotation
-                 this.isDragging = true;
                  this.lastMouseX = pointer.clientX;
                  this.lastMouseY = pointer.clientY;
              }
             
-                         onPointerMove(e) {
+            onPointerMove(e) {
                  if (!this.isDragging) return;
                  e.preventDefault();
                  
                  const pointer = e.touches ? e.touches[0] : e;
-                 const deltaX = pointer.clientX - this.lastMouseX;
-                 const deltaY = pointer.clientY - this.lastMouseY;
                  
-                 this.rotationY += deltaX * 0.5;
-                 this.rotationX -= deltaY * 0.5;
-                 
-                 // Limit rotation to ±90 degrees
-                 this.rotationX = Math.max(-90, Math.min(90, this.rotationX));
-                 this.rotationY = Math.max(-90, Math.min(90, this.rotationY));
+                 if (this.isRotatingCube) {
+                     // Cube rotation
+                     const deltaX = pointer.clientX - this.lastMouseX;
+                     const deltaY = pointer.clientY - this.lastMouseY;
+                     
+                     this.rotationY += deltaX * 0.5;
+                     this.rotationX -= deltaY * 0.5;
+                     
+                     // Limit rotation to ±90 degrees
+                     this.rotationX = Math.max(-90, Math.min(90, this.rotationX));
+                     this.rotationY = Math.max(-90, Math.min(90, this.rotationY));
+                     
+                     this.render();
+                 } else if (this.isRotatingFace) {
+                     // Face/row/column rotation - check if drag is sufficient
+                     const deltaX = pointer.clientX - this.dragStartX;
+                     const deltaY = pointer.clientY - this.dragStartY;
+                     const minDrag = 30;
+                     
+                                           if (Math.abs(deltaX) > minDrag || Math.abs(deltaY) > minDrag) {
+                          this.performFaceRotation(deltaX, deltaY);
+                          
+                          // Clean up after rotation
+                          if (this.selectedSquare && this.selectedSquare.element) {
+                              this.selectedSquare.element.classList.remove('selected-square');
+                          }
+                          
+                          this.isDragging = false; // One rotation per drag
+                          this.isRotatingFace = false;
+                          this.selectedSquare = null;
+                      }
+                 }
                  
                  this.lastMouseX = pointer.clientX;
                  this.lastMouseY = pointer.clientY;
-                 
-                 this.render();
              }
             
             onPointerEnd(e) {
-                e.preventDefault();
-                this.isDragging = false;
-            }
+                 e.preventDefault();
+                 
+                 // Remove highlight from selected square
+                 if (this.selectedSquare && this.selectedSquare.element) {
+                     this.selectedSquare.element.classList.remove('selected-square');
+                 }
+                 
+                 this.isDragging = false;
+                 this.isRotatingCube = false;
+                 this.isRotatingFace = false;
+                 this.selectedSquare = null;
+             }
             
             // 3D transformation functions
             rotatePoint(x, y, z) {
@@ -213,21 +283,24 @@
                  };
              }
             
-            createSquare(corners, color, faceNormal) {
-                const rotatedCorners = corners.map(corner => this.rotatePoint(corner.x, corner.y, corner.z));
-                
-                const projectedCorners = rotatedCorners.map(corner => this.projectPoint(corner.x, corner.y, corner.z));
-                
-                                 const points = projectedCorners.map(p => `${p.x},${p.y}`).join(' ');
+            createSquare(corners, color, faceNormal, faceIndex, row, col) {
+                 const rotatedCorners = corners.map(corner => this.rotatePoint(corner.x, corner.y, corner.z));
+                 
+                 const projectedCorners = rotatedCorners.map(corner => this.projectPoint(corner.x, corner.y, corner.z));
+                 
+                 const points = projectedCorners.map(p => `${p.x},${p.y}`).join(' ');
                  const avgZ = rotatedCorners.reduce((sum, corner) => sum + corner.z, 0) / 4;
                  
                  const square = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
                  square.setAttribute('points', points);
                  square.setAttribute('class', `cube-face color-${color}`);
                  square.setAttribute('data-z', avgZ);
-                
-                return square;
-            }
+                 square.setAttribute('data-face', faceIndex);
+                 square.setAttribute('data-row', row);
+                 square.setAttribute('data-col', col);
+                 
+                 return square;
+             }
             
             render() {
                 this.svg.innerHTML = '';
@@ -249,7 +322,8 @@
                          const square = this.createSquare(
                              corners,
                              this.faces[0][row][col], 
-                             { x: 0, y: 0, z: 1 }
+                             { x: 0, y: 0, z: 1 },
+                             0, row, col
                          );
                          squares.push(square);
                      }
@@ -268,8 +342,9 @@
                          ];
                          const square = this.createSquare(
                              corners,
-                             this.faces[2][row][col], 
-                             { x: 0, y: 0, z: -1 }
+                             this.faces[3][row][col], 
+                             { x: 0, y: 0, z: -1 },
+                             3, row, col
                          );
                          squares.push(square);
                      }
@@ -289,7 +364,8 @@
                          const square = this.createSquare(
                              corners,
                              this.faces[1][row][col], 
-                             { x: 1, y: 0, z: 0 }
+                             { x: 1, y: 0, z: 0 },
+                             1, row, col
                          );
                          squares.push(square);
                      }
@@ -308,8 +384,9 @@
                          ];
                          const square = this.createSquare(
                              corners,
-                             this.faces[3][row][col], 
-                             { x: -1, y: 0, z: 0 }
+                             this.faces[4][row][col], 
+                             { x: -1, y: 0, z: 0 },
+                             4, row, col
                          );
                          squares.push(square);
                      }
@@ -328,8 +405,9 @@
                          ];
                          const square = this.createSquare(
                              corners,
-                             this.faces[4][row][col], 
-                             { x: 0, y: -1, z: 0 }
+                             this.faces[2][row][col], 
+                             { x: 0, y: -1, z: 0 },
+                             2, row, col
                          );
                          squares.push(square);
                      }
@@ -349,7 +427,8 @@
                          const square = this.createSquare(
                              corners,
                              this.faces[5][row][col], 
-                             { x: 0, y: 1, z: 0 }
+                             { x: 0, y: 1, z: 0 },
+                             5, row, col
                          );
                          squares.push(square);
                      }
@@ -475,8 +554,284 @@
                  
                  this.cubeBounds = { minX, maxX, minY, maxY };
              }
-            
-            resetRotation() {
+             
+             getSquareAtPoint(x, y) {
+                 // Find the topmost square at the given point
+                 const squares = Array.from(this.svg.querySelectorAll('.cube-face'));
+                 
+                 // Sort by z-index (front to back)
+                 squares.sort((a, b) => {
+                     const zA = parseFloat(a.getAttribute('data-z'));
+                     const zB = parseFloat(b.getAttribute('data-z'));
+                     return zB - zA; // Front to back
+                 });
+                 
+                 for (const square of squares) {
+                     if (this.isPointInPolygon(x, y, square)) {
+                         return square;
+                     }
+                 }
+                 
+                 return null;
+             }
+             
+             isPointInPolygon(x, y, polygon) {
+                 const points = polygon.getAttribute('points').split(' ');
+                 const vertices = points.map(point => {
+                     const [px, py] = point.split(',').map(Number);
+                     return [px, py];
+                 });
+                 
+                 let inside = false;
+                 for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+                     const [xi, yi] = vertices[i];
+                     const [xj, yj] = vertices[j];
+                     
+                     if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                         inside = !inside;
+                     }
+                 }
+                 
+                 return inside;
+             }
+             
+            performFaceRotation(deltaX, deltaY) {
+                 if (!this.selectedSquare) return;
+                 
+                 const absX = Math.abs(deltaX);
+                 const absY = Math.abs(deltaY);
+                 
+                 const { face, row, col } = this.selectedSquare;
+                 
+                 // Only allow rotations on front face (0) and right face (1) for now
+                 if (face === 0) {
+                     // Front face - use current logic directly
+                     if (absX > absY) {
+                         // Horizontal drag - rotate row
+                         if (deltaX > 0) {
+                             this.rotateRowRight(face, row);
+                         } else {
+                             this.rotateRowLeft(face, row);
+                         }
+                     } else {
+                         // Vertical drag - rotate column
+                         if (deltaY > 0) {
+                             this.rotateColumnDown(face, col);
+                         } else {
+                             this.rotateColumnUp(face, col);
+                         }
+                     }
+                 } else if (face === 1) {
+                     // Right face - rotate cube left, do operation, rotate back
+                     this.rotateCubeRight();
+                     
+                     if (absX > absY) {
+                         // Horizontal drag on right face -> row rotation on transformed front face
+                         if (deltaX > 0) {
+                             this.rotateRowRight(0, row);
+                         } else {
+                             this.rotateRowLeft(0, row);
+                         }
+                     } else {
+                         // Vertical drag on right face -> column rotation on transformed front face
+                         if (deltaY > 0) {
+                             this.rotateColumnDown(0, 2 - col);
+                         } else {
+                             this.rotateColumnUp(0, 2 - col);
+                         }
+                     }
+                     
+                     this.rotateCubeLeft();
+                 }
+                 // For other faces (2,3,4,5), do nothing for now
+                 
+                 this.render();
+             }
+             
+             // Cube rotation algorithms copied from proven rubiks-cube.js
+             rotateRowLeft(face, row) {
+                 // Map face-relative coordinates to global cube operations
+                 if (face === 0 || face === 2) { // Front or Back face
+                     this.rotateRowLeftGlobal(row);
+                 } else if (face === 1) { // Right face - row becomes depth
+                     this.rotateColumnUpGlobal(2 - row);
+                 } else if (face === 3) { // Left face - row becomes depth  
+                     this.rotateColumnDownGlobal(row);
+                 } else if (face === 4) { // Top face - row becomes horizontal
+                     this.rotateRowLeftGlobal(row);
+                 } else if (face === 5) { // Bottom face - row becomes horizontal
+                     this.rotateRowRightGlobal(2 - row);
+                 }
+             }
+             
+             rotateRowRight(face, row) {
+                 // Opposite of rotateRowLeft - use 3x left implementation
+                 this.rotateRowLeft(face, row);
+                 this.rotateRowLeft(face, row);
+                 this.rotateRowLeft(face, row);
+             }
+             
+             rotateColumnUp(face, col) {
+                 if (face === 0 || face === 2) { // Front or Back face
+                     if (face === 0) {
+                         this.rotateColumnUpGlobal(col);
+                     } else {
+                         this.rotateColumnDownGlobal(2 - col);
+                     }
+                 } else if (face === 1) { // Right face - col becomes row
+                     this.rotateRowRightGlobal(col);
+                 } else if (face === 3) { // Left face - col becomes row
+                     this.rotateRowLeftGlobal(2 - col);
+                 } else if (face === 4) { // Top face - col becomes depth
+                     this.rotateColumnDownGlobal(2 - col);
+                 } else if (face === 5) { // Bottom face - col becomes depth
+                     this.rotateColumnUpGlobal(col);
+                 }
+             }
+             
+             rotateColumnDown(face, col) {
+                 // Opposite of rotateColumnUp - use 3x up implementation
+                 this.rotateColumnUp(face, col);
+                 this.rotateColumnUp(face, col);
+                 this.rotateColumnUp(face, col);
+             }
+             
+             // Core rotation methods from rubiks-cube.js
+             rotateColumnUpGlobal(col) {
+                 // Store the column from each face in the vertical cycle
+                 const topCol = [this.faces[2][0][col], this.faces[2][1][col], this.faces[2][2][col]];
+                 const frontCol = [this.faces[0][0][col], this.faces[0][1][col], this.faces[0][2][col]];
+                 const bottomCol = [this.faces[5][2][col], this.faces[5][1][col], this.faces[5][0][col]];
+                 const backCol = [this.faces[3][0][col], this.faces[3][1][col], this.faces[3][2][col]]; // Back face is mirrored horizontally
+                 
+                 // Cycle: top → back → bottom → front → top (pieces move up)
+                 for (let row = 0; row < 3; row++) {
+                     this.faces[3][2-row][col] = topCol[row];        // top → back (reversed vertically and mirrored)
+                     this.faces[5][row][col] = backCol[row];         // back → bottom (reversed vertically)
+                     this.faces[0][row][col] = bottomCol[row];         // bottom → front
+                     this.faces[2][row][col] = frontCol[row];          // front → top
+                 }
+
+                 // Only rotate side faces when rotating their respective columns (opposite direction)
+                 if (col === 0) {
+                     this.rotateFaceClockwise(4); // Rotate left face clockwise when moving up
+                 } else if (col === 2) {
+                     this.rotateFaceClockwise(1); // Rotate right face clockwise when moving up
+                 }
+             }
+             
+             rotateColumnDownGlobal(col) {
+                 this.rotateColumnUpGlobal(col);
+                 this.rotateColumnUpGlobal(col);
+                 this.rotateColumnUpGlobal(col);
+             }
+             
+             rotateRowLeftGlobal(row) {
+                 // Store the row from each face in the horizontal cycle
+                 const frontRow = [this.faces[0][row][0], this.faces[0][row][1], this.faces[0][row][2]];
+                 const rightRow = [this.faces[1][row][0], this.faces[1][row][1], this.faces[1][row][2]];
+                 const backRow = [this.faces[3][row][0], this.faces[3][row][1], this.faces[3][row][2]];
+                 const leftRow = [this.faces[4][row][0], this.faces[4][row][1], this.faces[4][row][2]];
+
+                 // Cycle: front → left → back → right → front (pieces move left)
+                 for (let col = 0; col < 3; col++) {
+                     this.faces[4][row][2-col] = frontRow[col];        // front → left (mirrored)
+                     this.faces[3][row][2-col] = leftRow[2-col];       // left → back (mirrored)
+                     this.faces[1][row][col] = backRow[2-col];         // back → right (mirrored)
+                     this.faces[0][row][col] = rightRow[col];          // right → front
+                 }
+
+                 // Rotate corresponding face when rotating top/bottom rows (opposite direction)
+                 if (row === 0) {
+                     this.rotateFaceClockwise(2); // Rotate top face clockwise
+                 } else if (row === 2) {
+                     this.rotateFaceClockwise(5); // Rotate bottom face clockwise
+                 }
+             }
+             
+             rotateRowRightGlobal(row) {
+                 this.rotateRowLeftGlobal(row);
+                 this.rotateRowLeftGlobal(row);
+                 this.rotateRowLeftGlobal(row);
+             }
+             
+             // Helper function to rotate a face clockwise
+             rotateFaceClockwise(faceIndex) {
+                 const face = this.faces[faceIndex];
+                 const temp = [
+                     [face[0][0], face[0][1], face[0][2]],
+                     [face[1][0], face[1][1], face[1][2]],
+                     [face[2][0], face[2][1], face[2][2]]
+                 ];
+                 
+                 // Rotate 90 degrees clockwise
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         face[col][2-row] = temp[row][col];
+                     }
+                 }
+             }
+
+             // Helper function to rotate a face counter-clockwise
+             rotateFaceCounterClockwise(faceIndex) {
+                 const face = this.faces[faceIndex];
+                 const temp = [
+                     [face[0][0], face[0][1], face[0][2]],
+                     [face[1][0], face[1][1], face[1][2]],
+                     [face[2][0], face[2][1], face[2][2]]
+                 ];
+                 
+                 // Rotate 90 degrees counter-clockwise
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         face[2-col][row] = temp[row][col];
+                     }
+                 }
+             }
+             
+             // Rotate entire cube left around Y-axis (front->left->back->right->front)
+             rotateCubeLeft() {
+                 // Store faces before rotation
+                 const tempFront = JSON.parse(JSON.stringify(this.faces[0]));   // front
+                 const tempRight = JSON.parse(JSON.stringify(this.faces[1]));   // right  
+                 const tempBack = JSON.parse(JSON.stringify(this.faces[3]));    // back
+                 const tempLeft = JSON.parse(JSON.stringify(this.faces[4]));    // left
+                 
+                 // Rotate faces around Y-axis: front->left, right->front, back->right, left->back
+                 this.faces[4] = tempFront;  // front -> left
+                 this.faces[0] = tempRight;  // right -> front
+                 this.faces[1] = tempBack;   // back -> right
+                 this.faces[3] = tempLeft;   // left -> back
+                 
+                 // Top face rotates counter-clockwise
+                 this.rotateFaceCounterClockwise(2);
+                 
+                 // Bottom face rotates clockwise
+                 this.rotateFaceClockwise(5);
+             }
+             
+             // Rotate entire cube right around Y-axis (front->right->back->left->front)
+             rotateCubeRight() {
+                 // Store faces before rotation
+                 const tempFront = JSON.parse(JSON.stringify(this.faces[0]));   // front
+                 const tempRight = JSON.parse(JSON.stringify(this.faces[1]));   // right  
+                 const tempBack = JSON.parse(JSON.stringify(this.faces[3]));    // back
+                 const tempLeft = JSON.parse(JSON.stringify(this.faces[4]));    // left
+                 
+                 // Rotate faces around Y-axis: front->right, left->front, back->left, right->back
+                 this.faces[1] = tempFront;  // front -> right
+                 this.faces[0] = tempLeft;   // left -> front
+                 this.faces[4] = tempBack;   // back -> left
+                 this.faces[3] = tempRight;  // right -> back
+                 
+                 // Top face rotates clockwise
+                 this.rotateFaceClockwise(2);
+                 
+                 // Bottom face rotates counter-clockwise
+                 this.rotateFaceCounterClockwise(5);
+             }
+             
+             resetRotation() {
                 this.rotationX = -15;
                 this.rotationY = 25;
                 this.rotationZ = 0;
@@ -498,13 +853,14 @@
             }
             
             solve() {
+                // Reset to solved state: 0=front(white), 1=right(red), 2=top(yellow), 3=back(orange), 4=left(blue), 5=bottom(green)
                 this.faces = [
-                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']],
-                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']],
-                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']],
-                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']],
-                    [['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow']],
-                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']]
+                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']], // Front
+                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']], // Right
+                    [['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow']], // Top
+                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']], // Back
+                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']], // Left
+                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']] // Bottom
                 ];
                 
                 this.render();
