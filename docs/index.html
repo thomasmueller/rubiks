@@ -13,7 +13,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 80vh;
         }
         
         .container {
@@ -21,7 +21,6 @@
             background: transparent;
             padding: 30px;
             width: 100%;
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -52,78 +51,11 @@
         .blue { fill: #0000ff; }
         .green { fill: #00ff00; }
         
-        .row-controls {
-            position: absolute;
-            left: 50px;
-            top: 50%;
-            margin-top: 0px;
-            z-index: 10;
-        }
-
-        .front-rotation-buttons {
-            position: absolute;
-            left: -37px;
-            width: 100px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 10;
-        }
-        
-        .all-rows-buttons-left {
-            position: absolute;
-            left: -37px;
-        }
-        
         .all-rows-buttons-right {
             position: absolute;
             left: 13px;
         }
         
-        .row-buttons-left {
-            position: absolute;
-            left: -37px;
-        }
-        
-        .row-buttons {
-            position: absolute;
-            left: 13px;
-        }
-        
-        .row-buttons-left button,
-        .row-buttons button {
-            background: rgba(240, 240, 240, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: black;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            width: 40px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 10;
-        }
-        
-        .row-buttons-left button:hover,
-        .row-buttons button:hover {
-            background: rgba(220, 220, 220, 0.9);
-            border-color: rgba(0, 0, 0, 0.5);
-            transform: translateX(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .row-buttons-left button:active,
-        .row-buttons button:active {
-            transform: translateX(0);
-        }
-        
-        .all-rows-left-btn,
         .all-rows-right-btn {
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
@@ -144,54 +76,11 @@
             z-index: 10;
         }
         
-        .all-rows-right-btn {
-            transform: scaleX(-1);
-        }
-        
-        .all-rows-left-btn:hover {
-            background: rgba(220, 220, 220, 0.9);
-            border-color: rgba(0, 0, 0, 0.5);
-            transform: translateX(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .all-rows-right-btn:hover {
-            background: rgba(220, 220, 220, 0.9);
-            border-color: rgba(0, 0, 0, 0.5);
-            transform: scaleX(-1) translateX(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .all-rows-left-btn:active {
-            transform: translateX(0);
-        }
-        
-        .all-rows-right-btn:active {
-            transform: scaleX(-1) translateX(0);
-        }
-        
-        .highlight-left {
-            background: rgba(255, 255, 0, 0.3) !important;
-            border-color: rgba(255, 255, 0, 0.6) !important;
-        }
-        
-        .highlight-right {
-            background: rgba(255, 255, 0, 0.3) !important;
-            border-color: rgba(255, 255, 0, 0.6) !important;
-        }
-        
         .column-controls {
             position: relative;
             height: 80px;
-            margin-left: 0px;
+            margin-left: -40px;
             margin-top: 20px;
-        }
-        
-        .column-buttons {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
         }
         
         .all-columns-buttons {
@@ -199,37 +88,6 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-        }
-        
-        .column-buttons button {
-            background: rgba(240, 240, 240, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: black;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            width: 40px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 10;
-        }
-        
-        .column-buttons button:hover {
-            background: rgba(220, 220, 220, 0.9);
-            border-color: rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .column-buttons button:active {
-            transform: translateY(0);
         }
         
         .all-columns-up-btn,
@@ -257,77 +115,11 @@
         .all-columns-down-btn:hover {
             background: rgba(220, 220, 220, 0.9);
             border-color: rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .all-columns-up-btn:active,
-        .all-columns-down-btn:active {
-            transform: translateY(0);
-        }
-        
-        .highlight-column-up {
-            background: rgba(0, 255, 255, 0.3) !important;
-            border-color: rgba(0, 255, 255, 0.6) !important;
-        }
-        
-        .highlight-column-down {
-            background: rgba(255, 0, 255, 0.3) !important;
-            border-color: rgba(255, 0, 255, 0.6) !important;
-        }
-        
-        .front-ccw-btn {
-            background: rgba(240, 240, 240, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: black;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            width: 40px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .front-cw-btn {
-            background: rgba(240, 240, 240, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: black;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            width: 40px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .front-ccw-btn:hover,
-        .front-cw-btn:hover {
-            background: rgba(220, 220, 220, 0.9);
-            border-color: rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .front-ccw-btn:active,
-        .front-cw-btn:active {
-            transform: translateY(0);
         }
         
         .bottom-controls {
-            position: fixed;
-            bottom: 20px;
+            margin-top: 10px;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -347,6 +139,7 @@
             backdrop-filter: blur(5px);
             width: 70px;
             height: 35px;
+            margin-left: -105px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -355,13 +148,9 @@
         .shuffle-btn:hover {
             background: rgba(220, 220, 220, 0.9);
             border-color: rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
-        .shuffle-btn:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
@@ -373,119 +162,31 @@
                         <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
                     </filter>
                 </defs>
-                <g id="cube" transform="translate(170, 200)"></g>
+                <g id="cube" transform="translate(150, 200)"></g>
             </svg>
         </div>
         
-        <div class="row-controls">
-            <!-- Front face rotation buttons -->
-            <div class="all-rows-buttons-left" style="top: -170px;">
-                <button onclick="cube.rotateFrontCounterClockwise()" class="front-ccw-btn">↺</button>
-            </div>
-            <div class="all-rows-buttons-right" style="top: -170px;">
-                <button onclick="cube.rotateFrontClockwise()" class="front-cw-btn">↻</button>
-            </div>
-            
-            <!-- All rows buttons -->
-            <div class="all-rows-buttons-left" style="top: -110px;">
-                <button onclick="cube.rotateAllRowsLeft()" class="all-rows-left-btn">⬅</button>
-            </div>
-            <div class="all-rows-buttons-right" style="top: -110px;">
-                <button onclick="cube.rotateAllRowsRight()" class="all-rows-right-btn">⬅</button>
-            </div>
-            
-            <!-- Individual row buttons -->
-            <div class="row-buttons-left" style="top: -50px;">
-                <button onclick="cube.rotateRowLeft(0); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-left-0">←</button>
-            </div>
-            <div class="row-buttons-left" style="top: 10px;">
-                <button onclick="cube.rotateRowLeft(1); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-left-1">←</button>
-            </div>
-            <div class="row-buttons-left" style="top: 70px;">
-                <button onclick="cube.rotateRowLeft(2); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-left-2">←</button>
-            </div>
-            <div class="row-buttons" style="top: -50px;">
-                <button onclick="cube.rotateRowRight(0); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-right-0">→</button>
-            </div>
-            <div class="row-buttons" style="top: 10px;">
-                <button onclick="cube.rotateRowRight(1); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-right-1">→</button>
-            </div>
-            <div class="row-buttons" style="top: 70px;">
-                <button onclick="cube.rotateRowRight(2); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="row-right-2">→</button>
-            </div>
-            
-
-        </div>
-        
-
-        
-
-        
         <div class="column-controls">
-            <!-- Individual column buttons -->
-            <div class="column-buttons" style="left: -120px;">
-                <button onclick="cube.rotateColumnUp(0); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-up-0">↑</button>
-                <button onclick="cube.rotateColumnDown(0); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-down-0">↓</button>
+            <div class="all-columns-buttons" style="left: -105px;">
+                <button onclick="cube.rotateFrontCounterClockwise()" class="all-columns-up-btn">↺</button>
+                <button onclick="cube.rotateAllRowsLeft()" class="all-columns-down-btn">⬅</button>
             </div>
-            <div class="column-buttons" style="left: -60px;">
-                <button onclick="cube.rotateColumnUp(1); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-up-1">↑</button>
-                <button onclick="cube.rotateColumnDown(1); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-down-1">↓</button>
-            </div>
-            <div class="column-buttons" style="left: 0px;">
-                <button onclick="cube.rotateColumnUp(2); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-up-2">↑</button>
-                <button onclick="cube.rotateColumnDown(2); event.stopPropagation();" 
-                        onmouseenter="clearAllHighlights()" 
-                        onmouseleave="enableAllHighlights()" 
-                        class="col-down-2">↓</button>
-            </div>
-            
-            <!-- All columns buttons -->
-            <div class="all-columns-buttons" style="left: 70px;">
+            <div class="all-columns-buttons" style="left: -55px;">
                 <button onclick="cube.rotateAllColumnsUp()" class="all-columns-up-btn">⬆</button>
                 <button onclick="cube.rotateAllColumnsDown()" class="all-columns-down-btn">⬇</button>
             </div>
-            
-
+            <div class="all-columns-buttons" style="left: -5px;">
+                <button onclick="cube.rotateFrontClockwise()" class="all-columns-up-btn">↻</button>
+                <button onclick="cube.rotateAllRowsRight()" class="all-columns-down-btn" style="transform: scaleX(-1)">⬅</button>
+            </div>
         </div>
-    </div>
-    <!-- Shuffle button at bottom -->
-    <div class="bottom-controls">
-        <button onclick="cube.shuffle()" class="shuffle-btn">Shuffle</button>
-    </div>
 
+        <!-- Shuffle button at bottom -->
+        <div class="bottom-controls">
+            <button onclick="cube.shuffle()" class="shuffle-btn">Shuffle</button>
+        </div>
+
+    </div>
 
     <!-- Load external JavaScript files -->
     <script src="./js/rubiks-cube.js"></script>
@@ -494,90 +195,12 @@
         let cube; // Global variable to access from buttons
         let highlightsEnabled = true;
 
-        // Highlight functions for all-rows hover effects
-        function highlightAllLeft(highlight) {
-            if (!highlightsEnabled) return;
-            
-            const buttons = [
-                document.querySelector('.row-left-0'),
-                document.querySelector('.row-left-1'),
-                document.querySelector('.row-left-2')
-            ];
-            
-            buttons.forEach(button => {
-                if (highlight) {
-                    button.classList.add('highlight-left');
-                } else {
-                    button.classList.remove('highlight-left');
-                }
-            });
-        }
-
-        function highlightAllRight(highlight) {
-            if (!highlightsEnabled) return;
-            
-            const buttons = [
-                document.querySelector('.row-right-0'),
-                document.querySelector('.row-right-1'),
-                document.querySelector('.row-right-2')
-            ];
-            
-            buttons.forEach(button => {
-                if (highlight) {
-                    button.classList.add('highlight-right');
-                } else {
-                    button.classList.remove('highlight-right');
-                }
-            });
-        }
-
         function clearAllHighlights() {
             highlightsEnabled = false;
-            highlightAllLeft(false);
-            highlightAllRight(false);
-            highlightAllColumnsUp(false);
-            highlightAllColumnsDown(false);
         }
 
         function enableAllHighlights() {
             highlightsEnabled = true;
-        }
-
-        // Highlight functions for all-columns hover effects
-        function highlightAllColumnsUp(highlight) {
-            if (!highlightsEnabled) return;
-            
-            const buttons = [
-                document.querySelector('.col-up-0'),
-                document.querySelector('.col-up-1'),
-                document.querySelector('.col-up-2')
-            ];
-            
-            buttons.forEach(button => {
-                if (highlight) {
-                    button.classList.add('highlight-column-up');
-                } else {
-                    button.classList.remove('highlight-column-up');
-                }
-            });
-        }
-
-        function highlightAllColumnsDown(highlight) {
-            if (!highlightsEnabled) return;
-            
-            const buttons = [
-                document.querySelector('.col-down-0'),
-                document.querySelector('.col-down-1'),
-                document.querySelector('.col-down-2')
-            ];
-            
-            buttons.forEach(button => {
-                if (highlight) {
-                    button.classList.add('highlight-column-down');
-                } else {
-                    button.classList.remove('highlight-column-down');
-                }
-            });
         }
 
         // Initialize the cube when the page loads
