@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rubik's Cube</title>
     <style>
         body {
             margin: 0;
@@ -11,19 +10,22 @@
             font-family: Arial, sans-serif;
             background: #f8f8f8;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
         }
         
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
+            background: transparent;
             padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            width: 600px;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
         h1 {
@@ -51,9 +53,18 @@
         
         .row-controls {
             position: absolute;
-            left: 100px;
+            left: 50px;
             top: 50%;
             margin-top: 0px;
+            z-index: 10;
+        }
+
+        .front-rotation-buttons {
+            position: absolute;
+            left: -37px;
+            width: 100px;
+            display: flex;
+            justify-content: space-between;
             z-index: 10;
         }
         
@@ -171,7 +182,7 @@
         .column-controls {
             position: relative;
             height: 80px;
-            margin-left: 56px;
+            margin-left: 0px;
             margin-top: 20px;
         }
         
@@ -180,7 +191,6 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            transform: translateX(-50%);
         }
         
         .all-columns-buttons {
@@ -188,7 +198,6 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            transform: translateX(-50%);
         }
         
         .column-buttons button {
@@ -266,19 +275,7 @@
             border-color: rgba(255, 0, 255, 0.6) !important;
         }
         
-        .front-rotation-controls {
-            position: absolute;
-            left: 100px;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-top: 5px;
-            z-index: 10;
-        }
-        
         .front-ccw-btn {
-            position: absolute;
-            left: -38px;
-            top: 147px;
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
             color: black;
@@ -297,9 +294,6 @@
         }
         
         .front-cw-btn {
-            position: absolute;
-            left: 12px;
-            top: 147px;
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
             color: black;
@@ -330,19 +324,16 @@
             transform: translateY(0);
         }
         
-        .shuffle-control {
-            position: absolute;
-            left: 100px;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-top: -60px;
+        .bottom-controls {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
             z-index: 10;
         }
         
         .shuffle-btn {
-            position: absolute;
-            left: 410px;
-            top: -37px;
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid rgba(0, 0, 0, 0.3);
             color: black;
@@ -374,7 +365,6 @@
 </head>
 <body>
     <div class="container">
-        <h1>Rubik's Cube</h1>
         <div id="cubeContainer">
             <svg width="320" height="300" viewBox="0 0 300 300">
                 <defs>
@@ -387,46 +377,54 @@
         </div>
         
         <div class="row-controls">
+            <!-- Front face rotation buttons -->
+            <div class="all-rows-buttons-left" style="top: -170px;">
+                <button onclick="cube.rotateFrontCounterClockwise()" class="front-ccw-btn">↺</button>
+            </div>
+            <div class="all-rows-buttons-right" style="top: -170px;">
+                <button onclick="cube.rotateFrontClockwise()" class="front-cw-btn">↻</button>
+            </div>
+            
             <!-- All rows buttons -->
-            <div class="all-rows-buttons-left" style="top: -93px;">
+            <div class="all-rows-buttons-left" style="top: -110px;">
                 <button onclick="cube.rotateAllRowsLeft()" class="all-rows-left-btn">⬅</button>
             </div>
-            <div class="all-rows-buttons-right" style="top: -93px;">
+            <div class="all-rows-buttons-right" style="top: -110px;">
                 <button onclick="cube.rotateAllRowsRight()" class="all-rows-right-btn">⬅</button>
             </div>
             
             <!-- Individual row buttons -->
-            <div class="row-buttons-left" style="top: -31px;">
+            <div class="row-buttons-left" style="top: -50px;">
                 <button onclick="cube.rotateRowLeft(0); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
                         class="row-left-0">←</button>
             </div>
-            <div class="row-buttons-left" style="top: 31px;">
+            <div class="row-buttons-left" style="top: 10px;">
                 <button onclick="cube.rotateRowLeft(1); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
                         class="row-left-1">←</button>
             </div>
-            <div class="row-buttons-left" style="top: 93px;">
+            <div class="row-buttons-left" style="top: 70px;">
                 <button onclick="cube.rotateRowLeft(2); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
                         class="row-left-2">←</button>
             </div>
-            <div class="row-buttons" style="top: -31px;">
+            <div class="row-buttons" style="top: -50px;">
                 <button onclick="cube.rotateRowRight(0); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
                         class="row-right-0">→</button>
             </div>
-            <div class="row-buttons" style="top: 31px;">
+            <div class="row-buttons" style="top: 10px;">
                 <button onclick="cube.rotateRowRight(1); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
                         class="row-right-1">→</button>
             </div>
-            <div class="row-buttons" style="top: 93px;">
+            <div class="row-buttons" style="top: 70px;">
                 <button onclick="cube.rotateRowRight(2); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
@@ -436,20 +434,13 @@
 
         </div>
         
-        <!-- Front face rotation buttons -->
-        <div class="front-rotation-controls">
-            <button onclick="cube.rotateFrontCounterClockwise()" class="front-ccw-btn">↺</button>
-            <button onclick="cube.rotateFrontClockwise()" class="front-cw-btn">↻</button>
-        </div>
+
         
-        <!-- Shuffle button -->
-        <div class="shuffle-control">
-            <button onclick="cube.shuffle()" class="shuffle-btn">Shuffle</button>
-        </div>
+
         
         <div class="column-controls">
             <!-- Individual column buttons -->
-            <div class="column-buttons" style="left: 143px;">
+            <div class="column-buttons" style="left: -120px;">
                 <button onclick="cube.rotateColumnUp(0); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
@@ -459,7 +450,7 @@
                         onmouseleave="enableAllHighlights()" 
                         class="col-down-0">↓</button>
             </div>
-            <div class="column-buttons" style="left: 205px;">
+            <div class="column-buttons" style="left: -60px;">
                 <button onclick="cube.rotateColumnUp(1); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
@@ -469,7 +460,7 @@
                         onmouseleave="enableAllHighlights()" 
                         class="col-down-1">↓</button>
             </div>
-            <div class="column-buttons" style="left: 267px;">
+            <div class="column-buttons" style="left: 0px;">
                 <button onclick="cube.rotateColumnUp(2); event.stopPropagation();" 
                         onmouseenter="clearAllHighlights()" 
                         onmouseleave="enableAllHighlights()" 
@@ -481,7 +472,7 @@
             </div>
             
             <!-- All columns buttons -->
-            <div class="all-columns-buttons" style="left: 329px;">
+            <div class="all-columns-buttons" style="left: 70px;">
                 <button onclick="cube.rotateAllColumnsUp()" class="all-columns-up-btn">⬆</button>
                 <button onclick="cube.rotateAllColumnsDown()" class="all-columns-down-btn">⬇</button>
             </div>
@@ -489,6 +480,11 @@
 
         </div>
     </div>
+    <!-- Shuffle button at bottom -->
+    <div class="bottom-controls">
+        <button onclick="cube.shuffle()" class="shuffle-btn">Shuffle</button>
+    </div>
+
 
     <!-- Load external JavaScript files -->
     <script src="./js/rubiks-cube.js"></script>
