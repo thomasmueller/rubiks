@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rubik's Cube</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            touch-action: none;
+        }
+        
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #cube-container {
+            cursor: grab;
+            user-select: none;
+        }
+        
+        #cube-container:active {
+            cursor: grabbing;
+        }
+        
+        .cube-face {
+            stroke: #333;
+            stroke-width: 1;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .color-red { fill: #ff0000; }
+        .color-green { fill: #00ff00; }
+        .color-blue { fill: #0000ff; }
+        .color-yellow { fill: #ffff00; }
+        .color-orange { fill: #ff8000; }
+        .color-white { fill: #ffffff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>3D Rubik's Cube</h1>
+        <div id="cube-container">
+            <svg width="600" height="600" viewBox="-300 -300 600 600">
+                <g id="cube-group"></g>
+            </svg>
+        </div>
+        <div class="controls">
+            <button onclick="cube.resetRotation()">Reset View</button>
+            <button onclick="cube.shuffle()">Shuffle</button>
+            <button onclick="cube.solve()">Solve</button>
+        </div>
+    </div>
+
+    <script>
+        class Cube3D {
+            constructor() {
+                this.svg = document.getElementById('cube-group');
+                this.container = document.getElementById('cube-container');
+                
+                // Cube state - 6 faces, each 3x3
+                this.faces = [
+                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']], // Front
+                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']], // Right
+                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']], // Back
+                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']], // Left
+                    [['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow']], // Top
+                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']] // Bottom
+                ];
+                
+                // 3D rotation angles
+                this.rotationX = -15;
+                this.rotationY = 25;
+                this.rotationZ = 0;
+                
+                // Interaction state
+                this.isDragging = false;
+                this.lastMouseX = 0;
+                this.lastMouseY = 0;
+                
+                                 this.cubeSize = 100;
+                 this.squareSize = this.cubeSize / 3;
+                 
+                 // Bounding box of the rendered cube for hit detection
+                 this.cubeBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+                 
+                 this.setupEventListeners();
+                 this.render();
+            }
+            
+            setupEventListeners() {
+                // Mouse events
+                this.container.addEventListener('mousedown', (e) => this.onPointerStart(e));
+                document.addEventListener('mousemove', (e) => this.onPointerMove(e));
+                document.addEventListener('mouseup', (e) => this.onPointerEnd(e));
+                
+                // Touch events
+                this.container.addEventListener('touchstart', (e) => this.onPointerStart(e), { passive: false });
+                document.addEventListener('touchmove', (e) => this.onPointerMove(e), { passive: false });
+                document.addEventListener('touchend', (e) => this.onPointerEnd(e), { passive: false });
+            }
+            
+                         onPointerStart(e) {
+                 e.preventDefault();
+                 
+                 const pointer = e.touches ? e.touches[0] : e;
+                 const rect = this.container.getBoundingClientRect();
+                 const svgX = pointer.clientX - rect.left - rect.width / 2;
+                 const svgY = pointer.clientY - rect.top - rect.height / 2;
+                 
+                 // Check if click/touch is inside the cube bounds
+                 if (svgX >= this.cubeBounds.minX && svgX <= this.cubeBounds.maxX &&
+                     svgY >= this.cubeBounds.minY && svgY <= this.cubeBounds.maxY) {
+                     // Inside cube - don't allow rotation
+                     this.isDragging = false;
+                     return;
+                 }
+                 
+                 // Outside cube - allow rotation
+                 this.isDragging = true;
+                 this.lastMouseX = pointer.clientX;
+                 this.lastMouseY = pointer.clientY;
+             }
+            
+                         onPointerMove(e) {
+                 if (!this.isDragging) return;
+                 e.preventDefault();
+                 
+                 const pointer = e.touches ? e.touches[0] : e;
+                 const deltaX = pointer.clientX - this.lastMouseX;
+                 const deltaY = pointer.clientY - this.lastMouseY;
+                 
+                 this.rotationY += deltaX * 0.5;
+                 this.rotationX -= deltaY * 0.5;
+                 
+                 // Limit rotation to ±90 degrees
+                 this.rotationX = Math.max(-90, Math.min(90, this.rotationX));
+                 this.rotationY = Math.max(-90, Math.min(90, this.rotationY));
+                 
+                 this.lastMouseX = pointer.clientX;
+                 this.lastMouseY = pointer.clientY;
+                 
+                 this.render();
+             }
+            
+            onPointerEnd(e) {
+                e.preventDefault();
+                this.isDragging = false;
+            }
+            
+            // 3D transformation functions
+            rotatePoint(x, y, z) {
+                const radX = this.rotationX * Math.PI / 180;
+                const radY = this.rotationY * Math.PI / 180;
+                const radZ = this.rotationZ * Math.PI / 180;
+                
+                // Rotate around X axis
+                let y1 = y * Math.cos(radX) - z * Math.sin(radX);
+                let z1 = y * Math.sin(radX) + z * Math.cos(radX);
+                
+                // Rotate around Y axis
+                let x2 = x * Math.cos(radY) + z1 * Math.sin(radY);
+                let z2 = -x * Math.sin(radY) + z1 * Math.cos(radY);
+                
+                // Rotate around Z axis
+                let x3 = x2 * Math.cos(radZ) - y1 * Math.sin(radZ);
+                let y3 = x2 * Math.sin(radZ) + y1 * Math.cos(radZ);
+                
+                return { x: x3, y: y3, z: z2 };
+            }
+            
+                         projectPoint(x, y, z) {
+                 const distance = 500;
+                 const scale = distance / (distance - z);
+                 return {
+                     x: x * scale,
+                     y: y * scale,
+                     scale: scale
+                 };
+             }
+            
+            createSquare(corners, color, faceNormal) {
+                const rotatedCorners = corners.map(corner => this.rotatePoint(corner.x, corner.y, corner.z));
+                
+                const projectedCorners = rotatedCorners.map(corner => this.projectPoint(corner.x, corner.y, corner.z));
+                
+                                 const points = projectedCorners.map(p => `${p.x},${p.y}`).join(' ');
+                 const avgZ = rotatedCorners.reduce((sum, corner) => sum + corner.z, 0) / 4;
+                 
+                 const square = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                 square.setAttribute('points', points);
+                 square.setAttribute('class', `cube-face color-${color}`);
+                 square.setAttribute('data-z', avgZ);
+                
+                return square;
+            }
+            
+            render() {
+                this.svg.innerHTML = '';
+                const squares = [];
+                
+                const half = this.cubeSize / 2;
+                
+                                 // Front face (z = half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const y = -half + row * this.squareSize;
+                         const corners = [
+                             { x: x, y: y, z: half },
+                             { x: x + this.squareSize, y: y, z: half },
+                             { x: x + this.squareSize, y: y + this.squareSize, z: half },
+                             { x: x, y: y + this.squareSize, z: half }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[0][row][col], 
+                             { x: 0, y: 0, z: 1 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Back face (z = -half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = half - (col + 1) * this.squareSize; // Mirrored
+                         const y = -half + row * this.squareSize;
+                         const corners = [
+                             { x: x, y: y, z: -half },
+                             { x: x + this.squareSize, y: y, z: -half },
+                             { x: x + this.squareSize, y: y + this.squareSize, z: -half },
+                             { x: x, y: y + this.squareSize, z: -half }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[2][row][col], 
+                             { x: 0, y: 0, z: -1 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Right face (x = half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const y = -half + row * this.squareSize;
+                         const z = half - (col + 1) * this.squareSize;
+                         const corners = [
+                             { x: half, y: y, z: z },
+                             { x: half, y: y, z: z + this.squareSize },
+                             { x: half, y: y + this.squareSize, z: z + this.squareSize },
+                             { x: half, y: y + this.squareSize, z: z }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[1][row][col], 
+                             { x: 1, y: 0, z: 0 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Left face (x = -half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const y = -half + row * this.squareSize;
+                         const z = -half + col * this.squareSize;
+                         const corners = [
+                             { x: -half, y: y, z: z },
+                             { x: -half, y: y, z: z + this.squareSize },
+                             { x: -half, y: y + this.squareSize, z: z + this.squareSize },
+                             { x: -half, y: y + this.squareSize, z: z }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[3][row][col], 
+                             { x: -1, y: 0, z: 0 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Top face (y = -half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const z = half - (row + 1) * this.squareSize;
+                         const corners = [
+                             { x: x, y: -half, z: z },
+                             { x: x + this.squareSize, y: -half, z: z },
+                             { x: x + this.squareSize, y: -half, z: z + this.squareSize },
+                             { x: x, y: -half, z: z + this.squareSize }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[4][row][col], 
+                             { x: 0, y: -1, z: 0 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Bottom face (y = half)
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const z = -half + row * this.squareSize;
+                         const corners = [
+                             { x: x, y: half, z: z },
+                             { x: x + this.squareSize, y: half, z: z },
+                             { x: x + this.squareSize, y: half, z: z + this.squareSize },
+                             { x: x, y: half, z: z + this.squareSize }
+                         ];
+                         const square = this.createSquare(
+                             corners,
+                             this.faces[5][row][col], 
+                             { x: 0, y: 1, z: 0 }
+                         );
+                         squares.push(square);
+                     }
+                 }
+                
+                                 // Sort squares by depth (z-coordinate) for proper rendering
+                 squares.sort((a, b) => {
+                     const zA = parseFloat(a.getAttribute('data-z'));
+                     const zB = parseFloat(b.getAttribute('data-z'));
+                     return zA - zB; // Back to front
+                 });
+                 
+                 // Calculate bounding box for hit detection
+                 this.calculateCubeBounds();
+                 
+                                  // Add squares to SVG
+                 squares.forEach(square => this.svg.appendChild(square));
+             }
+             
+             calculateCubeBounds() {
+                 let minX = Infinity, maxX = -Infinity;
+                 let minY = Infinity, maxY = -Infinity;
+                 
+                 const half = this.cubeSize / 2;
+                 
+                 // Check all faces and their corners
+                 const allCorners = [];
+                 
+                 // Front face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const y = -half + row * this.squareSize;
+                         allCorners.push(
+                             { x: x, y: y, z: half },
+                             { x: x + this.squareSize, y: y, z: half },
+                             { x: x + this.squareSize, y: y + this.squareSize, z: half },
+                             { x: x, y: y + this.squareSize, z: half }
+                         );
+                     }
+                 }
+                 
+                 // Back face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = half - (col + 1) * this.squareSize;
+                         const y = -half + row * this.squareSize;
+                         allCorners.push(
+                             { x: x, y: y, z: -half },
+                             { x: x + this.squareSize, y: y, z: -half },
+                             { x: x + this.squareSize, y: y + this.squareSize, z: -half },
+                             { x: x, y: y + this.squareSize, z: -half }
+                         );
+                     }
+                 }
+                 
+                 // Right face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const y = -half + row * this.squareSize;
+                         const z = half - (col + 1) * this.squareSize;
+                         allCorners.push(
+                             { x: half, y: y, z: z },
+                             { x: half, y: y, z: z + this.squareSize },
+                             { x: half, y: y + this.squareSize, z: z + this.squareSize },
+                             { x: half, y: y + this.squareSize, z: z }
+                         );
+                     }
+                 }
+                 
+                 // Left face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const y = -half + row * this.squareSize;
+                         const z = -half + col * this.squareSize;
+                         allCorners.push(
+                             { x: -half, y: y, z: z },
+                             { x: -half, y: y, z: z + this.squareSize },
+                             { x: -half, y: y + this.squareSize, z: z + this.squareSize },
+                             { x: -half, y: y + this.squareSize, z: z }
+                         );
+                     }
+                 }
+                 
+                 // Top face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const z = half - (row + 1) * this.squareSize;
+                         allCorners.push(
+                             { x: x, y: -half, z: z },
+                             { x: x + this.squareSize, y: -half, z: z },
+                             { x: x + this.squareSize, y: -half, z: z + this.squareSize },
+                             { x: x, y: -half, z: z + this.squareSize }
+                         );
+                     }
+                 }
+                 
+                 // Bottom face corners
+                 for (let row = 0; row < 3; row++) {
+                     for (let col = 0; col < 3; col++) {
+                         const x = -half + col * this.squareSize;
+                         const z = -half + row * this.squareSize;
+                         allCorners.push(
+                             { x: x, y: half, z: z },
+                             { x: x + this.squareSize, y: half, z: z },
+                             { x: x + this.squareSize, y: half, z: z + this.squareSize },
+                             { x: x, y: half, z: z + this.squareSize }
+                         );
+                     }
+                 }
+                 
+                 // Project all corners and find bounds
+                 allCorners.forEach(corner => {
+                     const rotated = this.rotatePoint(corner.x, corner.y, corner.z);
+                     const projected = this.projectPoint(rotated.x, rotated.y, rotated.z);
+                     
+                     minX = Math.min(minX, projected.x);
+                     maxX = Math.max(maxX, projected.x);
+                     minY = Math.min(minY, projected.y);
+                     maxY = Math.max(maxY, projected.y);
+                 });
+                 
+                 this.cubeBounds = { minX, maxX, minY, maxY };
+             }
+            
+            resetRotation() {
+                this.rotationX = -15;
+                this.rotationY = 25;
+                this.rotationZ = 0;
+                this.render();
+            }
+            
+            shuffle() {
+                const colors = ['red', 'green', 'blue', 'orange', 'yellow', 'white'];
+                
+                for (let face = 0; face < 6; face++) {
+                    for (let row = 0; row < 3; row++) {
+                        for (let col = 0; col < 3; col++) {
+                            this.faces[face][row][col] = colors[Math.floor(Math.random() * colors.length)];
+                        }
+                    }
+                }
+                
+                this.render();
+            }
+            
+            solve() {
+                this.faces = [
+                    [['red', 'red', 'red'], ['red', 'red', 'red'], ['red', 'red', 'red']],
+                    [['green', 'green', 'green'], ['green', 'green', 'green'], ['green', 'green', 'green']],
+                    [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'], ['blue', 'blue', 'blue']],
+                    [['orange', 'orange', 'orange'], ['orange', 'orange', 'orange'], ['orange', 'orange', 'orange']],
+                    [['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow'], ['yellow', 'yellow', 'yellow']],
+                    [['white', 'white', 'white'], ['white', 'white', 'white'], ['white', 'white', 'white']]
+                ];
+                
+                this.render();
+            }
+        }
+        
+        // Initialize the cube when the page loads
+        let cube;
+        document.addEventListener('DOMContentLoaded', function() {
+            cube = new Cube3D();
+        });
+    </script>
+</body>
+</html> 
