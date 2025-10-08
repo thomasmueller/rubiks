@@ -384,7 +384,7 @@
                          ];
                          const square = this.createSquare(
                              corners,
-                             this.faces[4][row][col], 
+                             this.faces[4][row][2-col], 
                              { x: -1, y: 0, z: 0 },
                              4, row, col
                          );
@@ -405,7 +405,7 @@
                          ];
                          const square = this.createSquare(
                              corners,
-                             this.faces[2][row][col], 
+                             this.faces[2][2-row][col], 
                              { x: 0, y: -1, z: 0 },
                              2, row, col
                          );
@@ -624,7 +624,6 @@
                  } else if (face === 1) {
                      // Right face - rotate cube left, do operation, rotate back
                      this.rotateCubeRight();
-                     
                      if (absX > absY) {
                          // Horizontal drag on right face -> row rotation on transformed front face
                          if (deltaX > 0) {
@@ -635,14 +634,13 @@
                      } else {
                          // Vertical drag on right face -> column rotation on transformed front face
                          if (deltaY > 0) {
-                             this.rotateColumnDown(0, 2 - col);
+                             this.rotateColumnUp(0, col);
                          } else {
-                             this.rotateColumnUp(0, 2 - col);
+                             this.rotateColumnDown(0, col);
                          }
                      }
-                     
                      this.rotateCubeLeft();
-                 }
+                    }
                  // For other faces (2,3,4,5), do nothing for now
                  
                  this.render();
